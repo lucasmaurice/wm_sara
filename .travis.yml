@@ -42,73 +42,18 @@
 
 ################################################################################
 
-# Use ubuntu trusty (14.04) with sudo privileges.
-dist: xenial
 sudo: required
-language:
-  - generic
-cache:
-  - apt
+dist: trusty
+# Force travis to use its minimal image with default Python settings
+language: generic
+compiler:
+  - gcc
+env:
+  global:
+    - VERBOSE_OUTPUT='true'
+    - POST_PROCESS='echo "post processing reached"'
 
-################################################################################
-
-# Install system dependencies, namely a very barebones ROS setup.
-before_install:
-  - lsb_release -a
-  # Setup sources.list
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-  # Setup keys
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-  # Update APT
-  - sudo apt-get update
-  # Install ROS
-  - sudo apt-get install -y ros-kinetic-desktop-full
-  # Install dependencies for building
-  - sudo apt-get install -y python-rosinstall python-rosinstall-generator python-wstool build-essential
-  # Prepare rosdep to install dependencies.
-  - sudo rosdep init
-  - rosdep update
-  # Environment setup
-  - source /opt/ros/kinetic/setup.bash
-
-# Create a catkin workspace with the package under integration.
 install:
-  - mkdir -p ~/sara_ws/src
-  - cd ~/sara_ws/src
-  - catkin_init_workspace
-  # Create the devel/setup.bash (run catkin_make with an empty workspace) and
-  # source it to set the path variables.
-  - cd ~/sara_ws
-  - catkin_make
-  - source devel/setup.bash
-  # Add the package under integration to the workspace using a symlink.
-  - cd ~/catkin_ws/src
-  - ln -s $CI_SOURCE_PATH .
-
-# Install all dependencies, using wstool first and rosdep second.
-# wstool looks for a ROSINSTALL_FILE defined in the environment variables.
-before_script:
-  # source dependencies: install using wstool.
-  # - cd ~/catkin_ws/src
-  # - wstool init
-  # - if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
-  # - wstool up
-  # # package depdencies: install using rosdep.
-  # - cd ~/catkin_ws
-  # - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
-
-# Compile and test (mark the build as failed if any step fails). If the
-# CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
-# to blacklist certain packages.
-#
-# NOTE on testing: `catkin_make run_tests` will show the output of the tests
-# (gtest, nosetest, etc..) but always returns 0 (success) even if a test
-# fails. Running `catkin_test_results` aggregates all the results and returns
-# non-zero when a test fails (which notifies Travis the build failed).
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
-  # - source /opt/ros/$ROS_DISTRO/setup.bash
-  # - cd ~/catkin_ws
-  # - catkin_make $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
-  # # Run the tests, ensuring the path is set correctly.
-  # - source devel/setup.bash
-  # - catkin_make run_tests && catkin_test_results
+  - .ci_config/travis.sh
