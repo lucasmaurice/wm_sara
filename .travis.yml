@@ -54,15 +54,6 @@ cache:
 # trigger a build matrix for different ROS distributions if desired.
 env:
   global:
-    - ROS_DISTRO=kinetic
-    - ROS_CI_DESKTOP="`lsb_release -cs`"  # e.g. [precise|trusty|...]
-    - CI_SOURCE_PATH=$(pwd)
-    - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
-    - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
-    - ROS_PARALLEL_JOBS='-j8 -l6'
-    # Set the python path manually to include /usr/-/python2.7/dist-packages
-    # as this is where apt-get installs python packages.
-    - PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
 
 ################################################################################
 
@@ -73,11 +64,11 @@ before_install:
   # Setup keys
   - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
   # Update APT
-  - sudo apt update -qq
+  - sudo apt update
   # Install ROS
-  - sudo apt install -y -qq ros-kinetic-desktop-full
+  - sudo apt install -y ros-kinetic-desktop-full
   # Install dependencies for building
-  - sudo apt install -y -qq python-rosinstall python-rosinstall-generator python-wstool build-essential
+  - sudo apt install -y python-rosinstall python-rosinstall-generator python-wstool build-essential
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
   - rosdep update
